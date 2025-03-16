@@ -8,4 +8,3 @@ dependencies:
     - pandas
     - streamlit
     - scikit-learn
-    - pickle
