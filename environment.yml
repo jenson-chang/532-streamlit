@@ -1,0 +1,11 @@
+name: 'dashboard'
+channels:
+    - conda-forge
+    - defaults
+dependencies:
+    - ipykernel
+    - altair
+    - pandas
+    - streamlit
+    - scikit-learn
+    - pickle
