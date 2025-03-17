@@ -55,25 +55,47 @@ filtered_df = df[df['country'].isin(selected_countries)]
 filtered_df["temp_increase"] = filtered_df.groupby("country")["temp"].cumsum()
 
 # Plot the data
-historical = alt.Chart(filtered_df[filtered_df['year'] <= BASELINE_YEAR]).mark_line().encode(
+# Create a selection that chooses the nearest point & selects based on x-value
+zoom = alt.selection_interval(
+    bind='scales',
+    encodings=['x', 'y']
+)
+
+historical_line = alt.Chart(filtered_df[filtered_df['year'] <= BASELINE_YEAR]).mark_line().encode(
     x=alt.X("year:O", title="Year"),
     y=alt.Y("temp_increase:Q", title="Temperature Increase (°C)"),
     color=alt.Color("country:N", title="Country")
 )
 
-predictions = alt.Chart(filtered_df[filtered_df['year'] >= BASELINE_YEAR]).mark_line(strokeDash=[4, 4]).encode(
+historical_points = alt.Chart(filtered_df[filtered_df['year'] <= BASELINE_YEAR]).mark_circle(size=50).encode(
     x=alt.X("year:O"),
     y=alt.Y("temp_increase:Q"),
-    color=alt.Color("country:N")
+    color=alt.Color("country:N"),
+    tooltip=[
+        alt.Tooltip("country:N", title="Country"),
+        alt.Tooltip("year:O", title="Year"),
+        alt.Tooltip("temp_increase:Q", title="Temperature Increase (°C)", format=".2f")
+    ]
 )
 
-plot = (historical + predictions).properties(
+predictions_points = alt.Chart(filtered_df[filtered_df['year'] >= BASELINE_YEAR]).mark_circle(size=50).encode(
+    x=alt.X("year:O"),
+    y=alt.Y("temp_increase:Q"),
+    color=alt.Color("country:N"),
+    tooltip=[
+        alt.Tooltip("country:N", title="Country"),
+        alt.Tooltip("year:O", title="Year"),
+        alt.Tooltip("temp_increase:Q", title="Temperature Increase (°C)", format=".2f")
+    ]
+)
+
+plot = (historical_line + historical_points + predictions_points).properties(
     width=800,
     height=400
 ).configure_axis(
     titleFontSize=20,
     labelFontSize=16
-)
+).add_selection(zoom)
 
 # Main title and plot
 st.title('Temperature Increase Prediction from 2023 to 2028')
